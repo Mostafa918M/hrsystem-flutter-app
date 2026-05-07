@@ -1,0 +1,307 @@
+{
+	"info": {
+		"_postman_id": "7c35513f-4cea-4ccf-8925-e401daaff53b",
+		"name": "HR System API - Fair Direction",
+		"description": "Customized Backend API for Fair Direction HR Management System.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Setup & Auth",
+			"item": [
+				{
+					"name": "Login (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"if (response.status === 'success') {",
+									"    pm.environment.set('access_token', response.data.accessToken);",
+									"    pm.environment.set('refresh_token', response.data.refreshToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-tenant-slug",
+								"value": "{{tenant_slug}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@fairDiretion.com\",\n    \"password\": \"FairDirection918\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Company Info (QR Token)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-tenant-slug",
+								"value": "{{tenant_slug}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tenants/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tenants",
+								"me"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Employees",
+			"item": [
+				{
+					"name": "Create Employee (Auto-fill from ID)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-tenant-slug",
+								"value": "{{tenant_slug}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fullName\": \"Ahmed Egyptian Test\",\n    \"nationalId\": \"29505150101234\",\n    \"nationalIdAddress\": \"Cairo, Egypt\",\n    \"residenceAddress\": \"New Cairo\",\n    \"privatePhone\": \"01234567890\",\n    \"jobTitle\": \"Project Manager\",\n    \"department\": \"Management\",\n    \"basicSalary\": 25000,\n    \"email\": \"ahmed@fairdiretion.com\",\n    \"password\": \"Employee123!\",\n    \"role\": \"employee\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/employees",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"employees"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Employee Analytics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-tenant-slug",
+								"value": "{{tenant_slug}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/employees/{{employee_id}}/analytics?month=5&year=2026",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"employees",
+								"{{employee_id}}",
+								"analytics"
+							],
+							"query": [
+								{
+									"key": "month",
+									"value": "5"
+								},
+								{
+									"key": "year",
+									"value": "2026"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload National ID Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-tenant-slug",
+								"value": "{{tenant_slug}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "type",
+									"value": "national_id_image",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/employees/{{employee_id}}/documents",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"employees",
+								"{{employee_id}}",
+								"documents"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Attendance",
+			"item": [
+				{
+					"name": "Check In (Static QR + Location)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-tenant-slug",
+								"value": "{{tenant_slug}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"qrToken\": \"{{static_qr_token}}\",\n    \"location\": {\n        \"lat\": 30.104099,\n        \"lng\": 31.3248849\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/attendance/check-in",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"attendance",
+								"check-in"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Payroll",
+			"item": [
+				{
+					"name": "Generate Monthly Slip",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-tenant-slug",
+								"value": "{{tenant_slug}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"employeeId\": \"{{employee_id}}\",\n    \"month\": 5,\n    \"year\": 2026\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/payroll/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"payroll",
+								"generate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "tenant_slug",
+			"value": "fairdirection",
+			"type": "string"
+		},
+		{
+			"key": "employee_id",
+			"value": "PASTE_ID_HERE",
+			"type": "string"
+		},
+		{
+			"key": "static_qr_token",
+			"value": "PASTE_TENANT_QR_TOKEN_HERE",
+			"type": "string"
+		}
+	]
+}
