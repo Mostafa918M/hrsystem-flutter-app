@@ -8,6 +8,9 @@ class User {
   final int annualLeaveBalance;
   final int sickLeaveBalance;
   final int emergencyLeaveBalance;
+  final double loans;
+  final bool mustChangePassword;
+  final Map<String, bool> enabledFeatures;
 
   User({
     required this.id,
@@ -19,9 +22,20 @@ class User {
     this.annualLeaveBalance = 0,
     this.sickLeaveBalance = 0,
     this.emergencyLeaveBalance = 0,
+    this.loans = 0.0,
+    this.mustChangePassword = false,
+    this.enabledFeatures = const {},
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    final featuresJson = json['enabledFeatures'] as Map<String, dynamic>? ?? {};
+    final Map<String, bool> featuresMap = {};
+    featuresJson.forEach((key, value) {
+      if (value is bool) {
+        featuresMap[key] = value;
+      }
+    });
+
     return User(
       id: json['id'] ?? json['_id'] ?? '',
       name: json['fullName'] ?? json['name'] ?? 'Unknown User',
@@ -32,6 +46,9 @@ class User {
       annualLeaveBalance: json['annualLeaveBalance'] ?? 0,
       sickLeaveBalance: json['sickLeaveBalance'] ?? 0,
       emergencyLeaveBalance: json['emergencyLeaveBalance'] ?? 0,
+      loans: (json['loans'] as num?)?.toDouble() ?? 0.0,
+      mustChangePassword: json['mustChangePassword'] ?? false,
+      enabledFeatures: featuresMap,
     );
   }
 }

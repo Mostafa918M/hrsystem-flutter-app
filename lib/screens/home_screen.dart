@@ -11,6 +11,12 @@ import 'profile_screen.dart';
 import 'attendance_report_screen.dart';
 import 'salary_screen.dart';
 import 'leave_request_screen.dart';
+import 'loan_request_screen.dart';
+import 'overtime_request_screen.dart';
+import 'expense_request_screen.dart';
+import 'vacation_advance_screen.dart';
+import 'encashment_request_screen.dart';
+import 'notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -32,6 +38,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadStatus() async {
     setState(() => _isLoadingStatus = true);
+    try {
+      await Provider.of<AuthProvider>(context, listen: false).tryAutoLogin();
+    } catch (_) {}
     final status = await _attendanceService.getTodayStatus();
     if (mounted) {
       setState(() {
@@ -67,14 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 background: Container(
                   decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF4F46E5),
-                        Color(0xFF7C3AED),
-                      ],
-                    ),
+                    color: AppTheme.primaryColor,
                   ),
                   child: Align(
                     alignment: Alignment.center,
@@ -86,8 +88,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              backgroundColor: const Color(0xFF4F46E5),
+              backgroundColor: AppTheme.primaryColor,
               actions: [
+                IconButton(
+                  icon: const Icon(Icons.notifications_none_rounded, color: Colors.white),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                  ),
+                ),
                 IconButton(
                   icon: const Icon(Icons.person_outline_rounded, color: Colors.white),
                   onPressed: () => Navigator.push(
@@ -103,17 +112,46 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildAttendanceCard(context),
-                    const SizedBox(height: 24),
-                    _buildQuickActionsRow(),
+                    if (user?.enabledFeatures['attendance'] != false) ...[
+                      _buildAttendanceCard(context),
+                      const SizedBox(height: 24),
+                    ],
+                    _buildQuickActionsRow(user),
                     const SizedBox(height: 24),
                     _buildSectionHeader('خدمات سريعة'),
                     const SizedBox(height: 12),
-                    _buildServiceTile(context, Icons.calendar_month_outlined, 'طلب إجازة', 'إدارة طلبات الإجازة', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LeaveRequestScreen()))),
-                    const SizedBox(height: 10),
-                    _buildServiceTile(context, Icons.receipt_long_outlined, 'كشف الراتب', 'عرض بيانات الراتب الشهري', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SalaryScreen()))),
-                    const SizedBox(height: 10),
-                    _buildServiceTile(context, Icons.bar_chart_rounded, 'تقرير الحضور', 'متابعة سجل الحضور والانصراف', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceReportScreen()))),
+                    if (user?.enabledFeatures['leaveRequests'] != false) ...[
+                      _buildServiceTile(context, Icons.calendar_month_outlined, 'طلب إجازة', 'إدارة طلبات الإجازة وتتبع الأرصدة', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LeaveRequestScreen()))),
+                      const SizedBox(height: 10),
+                    ],
+                    if (user?.enabledFeatures['loans'] != false) ...[
+                      _buildServiceTile(context, Icons.payments_outlined, 'طلب سلفة', 'تقديم ومتابعة طلبات السلف المالية', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoanRequestScreen()))),
+                      const SizedBox(height: 10),
+                    ],
+                    if (user?.enabledFeatures['vacationAdvances'] != false) ...[
+                      _buildServiceTile(context, Icons.beach_access, 'سلفة إجازة (Vacation Advance)', 'صرف راتب الإجازة مقدماً قبل الخروج', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VacationAdvanceScreen()))),
+                      const SizedBox(height: 10),
+                    ],
+                    if (user?.enabledFeatures['leaveEncashments'] != false) ...[
+                      _buildServiceTile(context, Icons.handshake_outlined, 'تسييل الإجازات ونهاية الخدمة', 'طلب صرف رصيد الإجازات ومكافأة نهاية الخدمة', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EncashmentRequestScreen()))),
+                      const SizedBox(height: 10),
+                    ],
+                    if (user?.enabledFeatures['overtimeRequests'] != false) ...[
+                      _buildServiceTile(context, Icons.more_time_rounded, 'طلب عمل إضافي', 'تسجيل ساعات العمل الإضافي المنجزة', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OvertimeRequestScreen()))),
+                      const SizedBox(height: 10),
+                    ],
+                    if (user?.enabledFeatures['companyExpenses'] != false) ...[
+                      _buildServiceTile(context, Icons.receipt_long_rounded, 'طلب تعويض مصاريف', 'استرداد مصاريف السفر أو المستلزمات وغيرها', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExpenseRequestScreen()))),
+                      const SizedBox(height: 10),
+                    ],
+                    if (user?.enabledFeatures['salarySlips'] != false) ...[
+                      _buildServiceTile(context, Icons.receipt_long_outlined, 'كشف الراتب', 'عرض بيانات الراتب الشهري بالتفصيل', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SalaryScreen()))),
+                      const SizedBox(height: 10),
+                    ],
+                    if (user?.enabledFeatures['attendance'] != false) ...[
+                      _buildServiceTile(context, Icons.bar_chart_rounded, 'تقرير الحضور', 'متابعة سجل الحضور والانصراف', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceReportScreen()))),
+                      const SizedBox(height: 10),
+                    ],
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -148,35 +186,35 @@ class _HomeScreenState extends State<HomeScreen> {
     String statusText = 'مستعد للعمل؟';
     String subText = 'سجّل حضورك لبدء يوم العمل';
     IconData statusIcon = Icons.wb_sunny_outlined;
-    List<Color> gradientColors = [const Color(0xFF4F46E5), const Color(0xFF7C3AED)];
+    Color cardColor = AppTheme.primaryColor;
 
     if (isCheckedIn && !isEffectivelyCheckedOut) {
       if (isEarlyCheckoutPending) {
         statusText = 'في انتظار الموافقة';
         subText = 'تم إرسال طلب الانصراف المبكر للإدارة';
         statusIcon = Icons.hourglass_top_rounded;
-        gradientColors = [Colors.amber.shade600, Colors.orange.shade500];
+        cardColor = AppTheme.secondaryColor;
       } else if (isEarlyCheckoutRejected) {
         statusText = 'أنت في العمل الآن';
         subText = 'تم رفض الانصراف المبكر. الجلسة نشطة.';
         statusIcon = Icons.work_rounded;
-        gradientColors = [Colors.red.shade500, Colors.orange.shade600];
+        cardColor = AppTheme.primaryColor;
       } else {
         statusText = 'أنت في العمل الآن';
         subText = 'الجلسة نشطة';
         statusIcon = Icons.work_rounded;
-        gradientColors = [Colors.orange.shade600, Colors.deepOrange.shade500];
+        cardColor = AppTheme.secondaryColor;
       }
     } else if (isEffectivelyCheckedOut) {
       statusText = 'انتهى يوم العمل!';
       subText = 'أراك غداً 😊';
       statusIcon = Icons.check_circle_rounded;
-      gradientColors = [Colors.green.shade600, Colors.teal.shade500];
+      cardColor = AppTheme.primaryColor;
     } else if (_todayStatus?['status'] == 'on_leave') {
       statusText = 'أنت في إجازة حالياً';
       subText = 'استمتع بوقتك! 😊';
       statusIcon = Icons.beach_access_rounded;
-      gradientColors = [Colors.cyan.shade600, Colors.blue.shade500];
+      cardColor = AppTheme.primaryColor;
     }
 
     // Late notification
@@ -189,17 +227,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: gradientColors,
-        ),
+        color: cardColor,
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: gradientColors[0].withOpacity(0.4),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
+            color: cardColor.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -251,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: gradientColors[0],
+                      foregroundColor: cardColor,
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       elevation: 0,
@@ -291,14 +325,20 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildQuickActionsRow() {
+  Widget _buildQuickActionsRow(user) {
     return Row(
       children: [
-        _buildQuickAction(context, Icons.fingerprint_rounded, 'الحضور', Colors.indigo, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceReportScreen()))),
-        const SizedBox(width: 12),
-        _buildQuickAction(context, Icons.event_note_rounded, 'الإجازات', Colors.teal, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LeaveRequestScreen()))),
-        const SizedBox(width: 12),
-        _buildQuickAction(context, Icons.account_balance_wallet_outlined, 'الراتب', Colors.orange, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SalaryScreen()))),
+        if (user?.enabledFeatures['attendance'] != false) ...[
+          _buildQuickAction(context, Icons.fingerprint_rounded, 'الحضور', AppTheme.primaryColor, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceReportScreen()))),
+          const SizedBox(width: 12),
+        ],
+        if (user?.enabledFeatures['leaveRequests'] != false) ...[
+          _buildQuickAction(context, Icons.event_note_rounded, 'الإجازات', AppTheme.secondaryColor, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LeaveRequestScreen()))),
+          const SizedBox(width: 12),
+        ],
+        if (user?.enabledFeatures['salarySlips'] != false) ...[
+          _buildQuickAction(context, Icons.account_balance_wallet_outlined, 'الراتب', AppTheme.primaryColor, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SalaryScreen()))),
+        ],
       ],
     );
   }

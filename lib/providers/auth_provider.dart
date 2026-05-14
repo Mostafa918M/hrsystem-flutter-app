@@ -90,4 +90,43 @@ class AuthProvider extends ChangeNotifier {
       }
     }
   }
+
+  Future<bool> changePassword(String currentPassword, String newPassword) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = await _apiClient.dio.post('auth/change-password', data: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      });
+
+      if (response.statusCode == 200) {
+        if (_user != null) {
+          _user = User(
+            id: _user!.id,
+            name: _user!.name,
+            email: _user!.email,
+            role: _user!.role,
+            profileImage: _user!.profileImage,
+            employeeId: _user!.employeeId,
+            annualLeaveBalance: _user!.annualLeaveBalance,
+            sickLeaveBalance: _user!.sickLeaveBalance,
+            emergencyLeaveBalance: _user!.emergencyLeaveBalance,
+            loans: _user!.loans,
+            mustChangePassword: false,
+          );
+        }
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      debugPrint("Change password error: $e");
+    }
+
+    _isLoading = false;
+    notifyListeners();
+    return false;
+  }
 }

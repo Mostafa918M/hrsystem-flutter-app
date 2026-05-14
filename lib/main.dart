@@ -6,6 +6,7 @@ import 'providers/auth_provider.dart';
 import 'services/notification_service.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/change_password_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,6 +39,9 @@ class MyApp extends StatelessWidget {
         home: Consumer<AuthProvider>(
           builder: (context, auth, _) {
             if (auth.isAuthenticated) {
+              if (auth.user?.mustChangePassword == true) {
+                return const ChangePasswordScreen();
+              }
               return const HomeScreen();
             }
             return const LoginScreen();
@@ -46,6 +50,7 @@ class MyApp extends StatelessWidget {
         routes: {
           '/login': (context) => const LoginScreen(),
           '/home': (context) => const HomeScreen(),
+          '/change-password': (context) => const ChangePasswordScreen(),
         },
       ),
     );

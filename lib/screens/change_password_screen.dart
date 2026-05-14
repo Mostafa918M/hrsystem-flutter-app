@@ -4,41 +4,92 @@ import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
 import '../core/app_theme.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class ChangePasswordScreen extends StatefulWidget {
+  const ChangePasswordScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
+  final _currentPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _obscureCurrent = true;
+  bool _obscureNew = true;
+  bool _obscureConfirm = true;
 
-  void _handleLogin() async {
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    final success = await auth.login(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-    );
+  void _handleChangePassword() async {
+    final currentPass = _currentPasswordController.text.trim();
+    final newPass = _newPasswordController.text.trim();
+    final confirmPass = _confirmPasswordController.text.trim();
 
-    if (success && mounted) {
-      if (auth.user?.mustChangePassword == true) {
-        Navigator.of(context).pushReplacementNamed('/change-password');
-      } else {
-        Navigator.of(context).pushReplacementNamed('/home');
-      }
-    } else if (mounted) {
+    if (currentPass.isEmpty || newPass.isEmpty || confirmPass.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'فشل تسجيل الدخول. يرجى التحقق من بياناتك.',
+            'جميع الحقول مطلوبة.',
             style: GoogleFonts.cairo(),
           ),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return;
+    }
+
+    if (newPass != confirmPass) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'كلمة المرور الجديدة وتأكيدها غير متطابقين.',
+            style: GoogleFonts.cairo(),
+          ),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (newPass.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'يجب أن تتكون كلمة المرور الجديدة من 6 أحرف على الأقل.',
+            style: GoogleFonts.cairo(),
+          ),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final success = await auth.changePassword(currentPass, newPass);
+
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'تم تغيير كلمة المرور بنجاح!',
+            style: GoogleFonts.cairo(),
+          ),
+          backgroundColor: Colors.green.shade700,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      Navigator.of(context).pushReplacementNamed('/home');
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'فشل تغيير كلمة المرور. يرجى التحقق من كلمة المرور الحالية.',
+            style: GoogleFonts.cairo(),
+          ),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -54,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // Top brand area
+              // Top header area
               Expanded(
                 flex: 2,
                 child: Padding(
@@ -70,11 +121,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
                         ),
-                        child: const Icon(Icons.business_center_rounded, color: Colors.white, size: 40),
+                        child: const Icon(Icons.shield_rounded, color: Colors.white, size: 40),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
                       Text(
-                        'نظام الموارد البشرية',
+                        'أمان الحساب',
                         style: GoogleFonts.cairo(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -84,9 +135,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'مرحباً بعودتك 👋',
+                        'يرجى تغيير كلمة المرور العشوائية الخاصة بك عند أول تسجيل دخول لضمان أمان حسابك',
                         style: GoogleFonts.cairo(
-                          fontSize: 18,
+                          fontSize: 15,
                           fontWeight: FontWeight.w500,
                           color: Colors.white.withOpacity(0.85),
                         ),
@@ -98,7 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               // Bottom form card
               Expanded(
-                flex: 3,
+                flex: 4,
                 child: Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
@@ -114,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          'تسجيل الدخول',
+                          'تغيير كلمة المرور',
                           style: GoogleFonts.cairo(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -122,26 +173,25 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           textAlign: TextAlign.right,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'سجّل دخولك إلى بوابة الموارد البشرية',
-                          style: GoogleFonts.cairo(
-                            fontSize: 14,
-                            color: AppTheme.textSecondary,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 28),
+                        // Current password
                         TextField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
+                          controller: _currentPasswordController,
+                          obscureText: _obscureCurrent,
                           textDirection: TextDirection.ltr,
                           textAlign: TextAlign.right,
                           style: GoogleFonts.cairo(),
                           decoration: InputDecoration(
-                            hintText: 'البريد الإلكتروني',
+                            hintText: 'كلمة المرور الحالية / العشوائية',
                             hintStyle: GoogleFonts.cairo(color: AppTheme.textSecondary),
-                            prefixIcon: const Icon(Icons.email_outlined, color: AppTheme.primaryColor),
+                            prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.primaryColor),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureCurrent ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                color: AppTheme.textSecondary,
+                              ),
+                              onPressed: () => setState(() => _obscureCurrent = !_obscureCurrent),
+                            ),
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -159,22 +209,23 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
+                        // New password
                         TextField(
-                          controller: _passwordController,
-                          obscureText: _obscurePassword,
+                          controller: _newPasswordController,
+                          obscureText: _obscureNew,
                           textDirection: TextDirection.ltr,
                           textAlign: TextAlign.right,
                           style: GoogleFonts.cairo(),
                           decoration: InputDecoration(
-                            hintText: 'كلمة المرور',
+                            hintText: 'كلمة المرور الجديدة',
                             hintStyle: GoogleFonts.cairo(color: AppTheme.textSecondary),
-                            prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.primaryColor),
+                            prefixIcon: const Icon(Icons.lock_reset_outlined, color: AppTheme.primaryColor),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                _obscureNew ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                                 color: AppTheme.textSecondary,
                               ),
-                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                              onPressed: () => setState(() => _obscureNew = !_obscureNew),
                             ),
                             filled: true,
                             fillColor: Colors.white,
@@ -192,11 +243,46 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 16),
+                        // Confirm password
+                        TextField(
+                          controller: _confirmPasswordController,
+                          obscureText: _obscureConfirm,
+                          textDirection: TextDirection.ltr,
+                          textAlign: TextAlign.right,
+                          style: GoogleFonts.cairo(),
+                          decoration: InputDecoration(
+                            hintText: 'تأكيد كلمة المرور الجديدة',
+                            hintStyle: GoogleFonts.cairo(color: AppTheme.textSecondary),
+                            prefixIcon: const Icon(Icons.check_circle_outline, color: AppTheme.primaryColor),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                color: AppTheme.textSecondary,
+                              ),
+                              onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(color: Colors.grey.shade200),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
                         Consumer<AuthProvider>(
                           builder: (context, auth, child) {
                             return ElevatedButton(
-                              onPressed: auth.isLoading ? null : _handleLogin,
+                              onPressed: auth.isLoading ? null : _handleChangePassword,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryColor,
                                 foregroundColor: Colors.white,
@@ -212,7 +298,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
                                     )
                                   : Text(
-                                      'تسجيل الدخول',
+                                      'حفظ كلمة المرور الجديدة',
                                       style: GoogleFonts.cairo(
                                         fontSize: 17,
                                         fontWeight: FontWeight.bold,
@@ -221,19 +307,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                             );
                           },
-                        ),
-                        const SizedBox(height: 20),
-                        Center(
-                          child: TextButton(
-                            onPressed: () {},
-                            child: Text(
-                              'نسيت كلمة المرور؟',
-                              style: GoogleFonts.cairo(
-                                color: AppTheme.primaryColor,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
                         ),
                       ],
                     ),
