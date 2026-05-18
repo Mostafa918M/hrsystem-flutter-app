@@ -50,7 +50,7 @@ class _VacationAdvanceScreenState extends State<VacationAdvanceScreen> {
 
     try {
       // Fetch user leaves
-      final resLeaves = await _apiClient.dio.get('leaves');
+      final resLeaves = await _apiClient.dio.get('leaves/my');
       if (resLeaves.statusCode == 200) {
         final allLeaves = resLeaves.data['data'] ?? [];
         if (mounted) {

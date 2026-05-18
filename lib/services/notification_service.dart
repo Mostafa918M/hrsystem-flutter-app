@@ -59,6 +59,10 @@ class NotificationService {
     );
   }
 
+  static Future<void> cancelNotification(int id) async {
+    await _notificationsPlugin.cancel(id: id);
+  }
+
   Future<List<dynamic>> getNotifications() async {
     try {
       final response = await _apiClient.dio.get('notifications');

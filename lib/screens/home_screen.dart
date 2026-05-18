@@ -17,6 +17,10 @@ import 'expense_request_screen.dart';
 import 'vacation_advance_screen.dart';
 import 'encashment_request_screen.dart';
 import 'notifications_screen.dart';
+import 'approval_hub_screen.dart';
+import 'my_team_screen.dart';
+import 'my_schedule_screen.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -118,8 +122,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                     _buildQuickActionsRow(user),
                     const SizedBox(height: 24),
+                    if (user?.role == 'manager') ...[
+                      _buildSectionHeader('مدير القسم'),
+                      const SizedBox(height: 12),
+                      _buildServiceTile(
+                        context, 
+                        Icons.fact_check_outlined, 
+                        'مركز الموافقات', 
+                        'مراجعة واعتماد طلبات الموظفين', 
+                        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ApprovalHubScreen()))
+                      ),
+                      const SizedBox(height: 10),
+                      _buildServiceTile(
+                        context, 
+                        Icons.groups_outlined, 
+                        'فريقي', 
+                        'عرض موظفي القسم', 
+                        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyTeamScreen()))
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                     _buildSectionHeader('خدمات سريعة'),
                     const SizedBox(height: 12),
+
                     if (user?.enabledFeatures['leaveRequests'] != false) ...[
                       _buildServiceTile(context, Icons.calendar_month_outlined, 'طلب إجازة', 'إدارة طلبات الإجازة وتتبع الأرصدة', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LeaveRequestScreen()))),
                       const SizedBox(height: 10),
@@ -152,6 +177,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       _buildServiceTile(context, Icons.bar_chart_rounded, 'تقرير الحضور', 'متابعة سجل الحضور والانصراف', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceReportScreen()))),
                       const SizedBox(height: 10),
                     ],
+                    _buildServiceTile(context, Icons.calendar_view_week_rounded, 'جدولي الأسبوعي', 'عرض الوردية المخصصة لكل يوم من الأسبوع', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyScheduleScreen()))),
+                    const SizedBox(height: 10),
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -220,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Late notification
     final now = DateTime.now();
     final bool isOnLeave = _todayStatus?['status'] == 'on_leave';
-    if (!isCheckedIn && !isCheckedOut && !isOnLeave && now.hour >= 11) {
+    if (!_isLoadingStatus && !isCheckedIn && !isCheckedOut && !isOnLeave && now.hour >= 11) {
       _showLateNotificationOnce();
     }
 
@@ -336,9 +363,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildQuickAction(context, Icons.event_note_rounded, 'الإجازات', AppTheme.secondaryColor, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LeaveRequestScreen()))),
           const SizedBox(width: 12),
         ],
-        if (user?.enabledFeatures['salarySlips'] != false) ...[
-          _buildQuickAction(context, Icons.account_balance_wallet_outlined, 'الراتب', AppTheme.primaryColor, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SalaryScreen()))),
-        ],
+        _buildQuickAction(context, Icons.calendar_view_week_rounded, 'جدولي', const Color(0xFF4338CA), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyScheduleScreen()))),
       ],
     );
   }

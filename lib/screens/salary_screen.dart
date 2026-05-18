@@ -11,17 +11,13 @@ class SalaryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = Provider.of<AuthProvider>(context).user;
     
-    // Fallback values if not provided by backend yet
-    // In auth.service.js getMe we added basicSalary and allowances
-    // Let's assume the AuthProvider parsed them, or we can use generic fallback for UI demonstration
-    // If AuthProvider user model doesn't have it, we show placeholder or wait for model update.
+    final double basicSalary = user?.basicSalary ?? 0.0;
+    final double transportAllowance = user?.allowances['transport'] ?? 0.0;
+    final double housingAllowance = user?.allowances['housing'] ?? 0.0;
+    final double medicalAllowance = user?.allowances['medical'] ?? 0.0;
+    final double otherAllowance = user?.allowances['other'] ?? 0.0;
     
-    // For now we'll use a placeholder structure if it's null
-    final double basicSalary = 5000; 
-    final double transportAllowance = 500;
-    final double medicalAllowance = 300;
-    
-    final double totalAllowances = transportAllowance + medicalAllowance;
+    final double totalAllowances = transportAllowance + housingAllowance + medicalAllowance + otherAllowance;
     final double netSalary = basicSalary + totalAllowances;
 
     return Scaffold(
@@ -67,10 +63,22 @@ class SalaryScreen extends StatelessWidget {
               'تفاصيل الراتب',
               [
                 _buildRowItem('الراتب الأساسي', '${basicSalary.toStringAsFixed(0)} ج.م', Icons.attach_money_rounded),
-                const Divider(height: 1, indent: 20, endIndent: 20),
-                _buildRowItem('بدل انتقال', '${transportAllowance.toStringAsFixed(0)} ج.م', Icons.directions_car_filled_outlined),
-                const Divider(height: 1, indent: 20, endIndent: 20),
-                _buildRowItem('بدل طبي', '${medicalAllowance.toStringAsFixed(0)} ج.م', Icons.medical_services_outlined),
+                if (transportAllowance > 0) ...[
+                  const Divider(height: 1, indent: 20, endIndent: 20),
+                  _buildRowItem('بدل انتقال', '${transportAllowance.toStringAsFixed(0)} ج.م', Icons.directions_car_filled_outlined),
+                ],
+                if (housingAllowance > 0) ...[
+                  const Divider(height: 1, indent: 20, endIndent: 20),
+                  _buildRowItem('بدل سكن', '${housingAllowance.toStringAsFixed(0)} ج.م', Icons.home_work_outlined),
+                ],
+                if (medicalAllowance > 0) ...[
+                  const Divider(height: 1, indent: 20, endIndent: 20),
+                  _buildRowItem('بدل طبي', '${medicalAllowance.toStringAsFixed(0)} ج.م', Icons.medical_services_outlined),
+                ],
+                if (otherAllowance > 0) ...[
+                  const Divider(height: 1, indent: 20, endIndent: 20),
+                  _buildRowItem('بدلات أخرى', '${otherAllowance.toStringAsFixed(0)} ج.م', Icons.more_horiz_rounded),
+                ],
               ],
             ),
             const SizedBox(height: 24),

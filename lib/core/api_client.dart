@@ -6,6 +6,7 @@ class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
   factory ApiClient() => _instance;
 
+  // static final String baseUrl = "https://api-hr.fairdirection.com/api/v1/";
   static final String baseUrl = "http://192.168.1.15:3000/api/v1/";
   final Dio dio = Dio(BaseOptions(baseUrl: baseUrl));
   final FlutterSecureStorage storage = const FlutterSecureStorage();

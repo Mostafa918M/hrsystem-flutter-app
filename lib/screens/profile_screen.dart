@@ -63,7 +63,9 @@ class ProfileScreen extends StatelessWidget {
             _buildProfileSection('المعلومات الوظيفية', [
               _buildInfoTile(Icons.badge_outlined, 'رقم الموظف', user?.id.substring(0, 8).toUpperCase() ?? 'غير متوفر'),
               const Divider(height: 1, indent: 20, endIndent: 20),
-              _buildInfoTile(Icons.work_outline_rounded, 'المسمى الوظيفي', user?.role.toUpperCase() ?? 'غير متوفر'),
+              _buildInfoTile(Icons.work_outline_rounded, 'المسمى الوظيفي', user?.jobTitle ?? 'غير متوفر'),
+              const Divider(height: 1, indent: 20, endIndent: 20),
+              _buildInfoTile(Icons.business_rounded, 'القسم', user?.department ?? 'غير متوفر'),
             ]),
             const SizedBox(height: 32),
             ElevatedButton(

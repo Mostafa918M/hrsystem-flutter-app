@@ -114,6 +114,9 @@ class AuthProvider extends ChangeNotifier {
             sickLeaveBalance: _user!.sickLeaveBalance,
             emergencyLeaveBalance: _user!.emergencyLeaveBalance,
             loans: _user!.loans,
+            basicSalary: _user!.basicSalary,
+            allowances: _user!.allowances,
+            enabledFeatures: _user!.enabledFeatures,
             mustChangePassword: false,
           );
         }
