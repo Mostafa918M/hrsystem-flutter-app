@@ -20,6 +20,8 @@ import 'notifications_screen.dart';
 import 'approval_hub_screen.dart';
 import 'my_team_screen.dart';
 import 'my_schedule_screen.dart';
+import 'recommendations_screen.dart';
+import '../services/recommendation_service.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -31,8 +33,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final AttendanceService _attendanceService = AttendanceService();
+  final RecommendationService _recommendationService = RecommendationService();
   Map<String, dynamic>? _todayStatus;
   bool _isLoadingStatus = true;
+  int _pendingRecsCount = 0;
 
   @override
   void initState() {
@@ -46,9 +50,11 @@ class _HomeScreenState extends State<HomeScreen> {
       await Provider.of<AuthProvider>(context, listen: false).tryAutoLogin();
     } catch (_) {}
     final status = await _attendanceService.getTodayStatus();
+    final recs = await _recommendationService.getMy();
     if (mounted) {
       setState(() {
         _todayStatus = status;
+        _pendingRecsCount = recs.length;
         _isLoadingStatus = false;
       });
     }
@@ -178,6 +184,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 10),
                     ],
                     _buildServiceTile(context, Icons.calendar_view_week_rounded, 'جدولي الأسبوعي', 'عرض الوردية المخصصة لكل يوم من الأسبوع', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyScheduleScreen()))),
+                    const SizedBox(height: 10),
+                    _buildServiceTileWithBadge(context, Icons.auto_awesome_rounded, 'التوصيات الذكية', 'اقتراحات عمل إضافي وإجازات مبنية على الحضور', _pendingRecsCount, () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const RecommendationsScreen())); _loadStatus(); }),
                     const SizedBox(height: 10),
                     const SizedBox(height: 20),
                   ],
@@ -420,6 +428,24 @@ class _HomeScreenState extends State<HomeScreen> {
         color: AppTheme.textPrimary,
       ),
       textAlign: TextAlign.start,
+    );
+  }
+
+  Widget _buildServiceTileWithBadge(BuildContext context, IconData icon, String title, String subtitle, int badgeCount, VoidCallback onTap) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        _buildServiceTile(context, icon, title, subtitle, onTap),
+        if (badgeCount > 0)
+          Positioned(
+            top: 8, right: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(color: AppTheme.primaryColor, borderRadius: BorderRadius.circular(10)),
+              child: Text('$badgeCount', style: GoogleFonts.cairo(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+            ),
+          ),
+      ],
     );
   }
 
